@@ -1,0 +1,6 @@
+media/**
+static/**
+*/migrations/**
+*/__pycache__/**
+*.sqlite3
+*/__init__.py
