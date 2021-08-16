@@ -1,0 +1,15 @@
+{% extends "../base.html" %}
+{% block title %} Convert {% endblock title %}
+{% block page %}
+<form method="POST" class="video_page">
+    {% csrf_token %}
+    <div style="width: 60%;">
+        <iframe width="100%" height="75%" class="video_div" src="https://www.youtube.com/embed/{{ url }}"></iframe>
+        <div></div>
+    </div>
+    <div class="buttons">
+        <button type="submit" name="to-audio" value="mp3" class="convert">Download audio</button>
+        <button type="submit" name="to-video" value="wav" class="convert">Download video</button>
+    </div>
+</form>
+{% endblock page %}

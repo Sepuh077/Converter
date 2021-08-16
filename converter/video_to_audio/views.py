@@ -4,38 +4,29 @@ from django.shortcuts import redirect, render
 from .forms import *
 import moviepy.editor as mp
 from converter.settings import MEDIA_URL
-from pytube import *
-
-
-def get_audio(video_path, type, start, end):
-    video = mp.VideoFileClip(video_path).subclip(start, end)
-    audio_filename = video_path.split('/')[-1].split('.')[0] + f'.{ type }'
-    response = HttpResponse(
-        content_type=f'audio/{type}',
-        headers={'Content-Disposition': f'attachment; filename="converted.{type}"'},
-    )
-    video.audio.write_audiofile(audio_filename)
-    response.write(open(audio_filename, 'rb').read())
-    if os.path.exists(audio_filename):
-        os.remove(audio_filename)
-    return response
+from pytube import YouTube, exceptions
+from pathlib import Path
+from .helper import *
 
 
 def from_youtube(request):
+    message = ''
     if request.method == "POST":
-        video = YouTube(request.POST.get('url'))
+        Path('media/videos').mkdir(exist_ok=True, parents=True)
         os.chdir('media/videos')
-        video_path = video.streams.get_lowest_resolution().download()
-        os.chdir('../..')
-        video = VideoModel.objects.create(video=video_path.split('media/')[-1])
-        return redirect('video', video_id=video.id)
+        try:
+            url = request.POST.get('url')
+            YouTube(url)
+            return redirect('youtube_video', video_id=url.split('/')[-1])
+        except exceptions.RegexMatchError:
+            message = 'Type valid video url!'
     context = {
         'upload': 'from-youtube',
+        'message': message,
     }
     return render(request, 'videos/index.html', context)
 
 
-# Create your views here.
 def upload_video(request):
     form = VideoForm()
     message = ''
@@ -45,7 +36,7 @@ def upload_video(request):
             video = form.save()
             return redirect('video', video_id=video.id)
         else:
-            message = 'Not valid!!!'
+            message = 'Choose video type object!'
     
     context = {
         'form': form,
@@ -55,24 +46,39 @@ def upload_video(request):
     return render(request, 'videos/index.html', context)
 
 
+def video_show_from_youtube(request, url):
+    video = YouTube(url)
+    if request.method == "POST":
+        if request.POST.get('to-audio'):
+            audio = video.streams.filter(only_audio=True).first()
+            return download_audio_from_youtube(audio)
+        elif request.POST.get('to-video'):
+            video_file = video.streams.get_highest_resolution()
+            return download_video_from_youtube(video_file)
+    
+    context = {
+        'url': url.split('/')[-1],
+        'MEDIA_URL': MEDIA_URL,
+    }
+    return render(request, 'videos/youtube.html', context)
+
+
 def video_show(request, video_id):
+    # try:
     try:
         video = VideoModel.objects.get(id=video_id)
         video_filename = str(video.video).split('/')[-1]
         video_path = f'media/videos/{video_filename}'
     except Exception:
-        return redirect('upload')
+        return video_show_from_youtube(request, f'https://youtu.be/{video_id}')
+    # except Exception:
+    #     return redirect('upload')
 
     if request.method == "POST":
         if request.POST.get('to-audio'):
-            start_time = int(request.POST.get('start')) if request.POST.get('start') else 0
-            end_time = request.POST.get('end')
             video = mp.VideoFileClip(video_path)
-            if not end_time or int(end_time) > video.duration:
-                end_time = video.duration
-            if start_time > int(end_time):
-                start_time = 0
-            return get_audio(video_path, request.POST.get('to-audio'), start_time, end_time)
+            start_time, end_time = config_timers(request, video.duration)
+            return download_audio(video_path, request.POST.get('to-audio'), start_time, end_time)
 
     context = {
         'video': video,
