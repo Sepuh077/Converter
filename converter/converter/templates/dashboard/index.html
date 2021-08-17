@@ -1,60 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <style>
-        * {
-            height: 98%;
-            width: 99%;
-        }
-
-        body {
-            background: cornflowerblue;
-            height: 100%;
-        }
-
-        a {
-            text-decoration: none;
-            width: 20%;
-            height: 10%;
-            margin: 20px;
-        }
-
-        button {
-            width: 100%;
-            height: 100%;
-            font-size: 20px;
-            cursor: pointer;
-            border: 0;
-            border-radius: 10px;
-            color: black;
-        }
-
-        button:hover {
-            background:skyblue;
-            color: white;
-        }
-
-        .page {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-        }
-    </style>
-</head>
-
-<body>
+{% extends "../base.html" %}
+{% block title %} Upload {% endblock title %}
+{% block page %}
     <div class="page">
-        <a href='{% url "upload" %}'><button type="submit">Upload</button></a>
-        <a href='{% url "youtube" %}'><button type="submit">Video from youtube</button></a>
+        <a href='{% url "upload" %}' class="dashboard_a"><button type="submit" class="dashboard_button">Upload</button></a>
+        <a href='{% url "youtube" %}' class="dashboard_a"><button type="submit" class="dashboard_button">Video from youtube</button></a>
     </div>
-</body>
-
-</html>
+{% endblock page %}

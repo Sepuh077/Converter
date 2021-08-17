@@ -4,21 +4,23 @@ from .forms import *
 import moviepy.editor as mp
 
 
-def download_audio_from_youtube(audio):
+def download_audio_from_youtube(video):
+    audio = video.streams.filter(only_audio=True).first()
     response = HttpResponse(
         content_type=f'audio/mp3',
-        headers={'Content-Disposition': f'attachment; filename="converted.mp3"'},
+        headers={'Content-Disposition': f'attachment; filename="{video.title}.mp3"'},
     )
     audio.stream_to_buffer(response)
     return response
 
 
 def download_video_from_youtube(video):
+    video_file = video.streams.get_highest_resolution()
     response = HttpResponse(
         content_type=f'video/mp4',
-        headers={'Content-Disposition': f'attachment; filename="converted.mp4"'},
+        headers={'Content-Disposition': f'attachment; filename="{video.title}.mp4"'},
     )
-    video.stream_to_buffer(response)
+    video_file.stream_to_buffer(response)
     return response
 
 
@@ -27,7 +29,7 @@ def download_audio(video_path, type, start, end):
     audio_filename = video_path.split('/')[-1].split('.')[0] + f'.{ type }'
     response = HttpResponse(
         content_type=f'audio/{type}',
-        headers={'Content-Disposition': f'attachment; filename="converted.{type}"'},
+        headers={'Content-Disposition': f'attachment; filename="sepuhner.{type}"'},
     )
     video.audio.write_audiofile(audio_filename)
     response.write(open(audio_filename, 'rb').read())

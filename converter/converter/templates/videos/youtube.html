@@ -3,9 +3,14 @@
 {% block page %}
 <form method="POST" class="video_page">
     {% csrf_token %}
-    <div style="width: 60%;">
+    <div style="width: 60%; display: flex; align-items: center;flex-direction: column; color: black; margin: 20px;">
+        <h3><b>{{ video.title }}</b></h3>
         <iframe width="100%" height="75%" class="video_div" src="https://www.youtube.com/embed/{{ url }}"></iframe>
-        <div></div>
+        <div style="width: 100%; margin-left: 30px;">
+            <div style="display: flex; flex-direction: row; width: 100%;">
+                Views &nbsp <h4 style="margin: 0;">{{ video.views }}</h4><br>
+            </div>
+        </div>
     </div>
     <div class="buttons">
         <button type="submit" name="to-audio" value="mp3" class="convert">Download audio</button>
